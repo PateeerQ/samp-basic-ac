@@ -10,8 +10,9 @@ public OnPlayerCheat(playerid, cheatid)
 
 // Function
 GetCheatName(cheatid)
-GetPlayerWeaponEx(playerid)
-GetPlayerAmmoEx(playerid)
+GetPlayerWeaponVar(playerid)
+GetPlayerAmmoVar(playerid)
+IsWeaponHasAmmo(weaponid)
 ```
 
 Include in your code and you must use YSI Y_Timers
