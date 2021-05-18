@@ -1,4 +1,4 @@
-# Pateer Basic Anti Cheat
+# Pateeer Basic Anti Cheat
 
 A SAMP Basic Anti Cheat - Plug and Easy to Use
 
