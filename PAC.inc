@@ -315,7 +315,6 @@ stock PAT_ResetPlayerVar(playerid)
     pat_player[playerid] = empty_player;
     pat_player[playerid][PAT_Health] = 100.0;
     pat_player[playerid][PAT_Armor] = 0.0;
-    SetPlayerArmour(playerid, 0);
     return 1;
 }
 
@@ -327,15 +326,15 @@ stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:ro
     pat_player[playerid][PAT_Ammo][1] += weapon2_ammo;
     pat_player[playerid][PAT_Weapon][2] = weapon3;
     pat_player[playerid][PAT_Ammo][2] += weapon3_ammo;
-    return GivePlayerWeapon(playerid, weaponid, ammo);
+    return SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 }
 
-#if defined _ALS_GivePlayerWeapon
-	#undef GivePlayerWeapon
+#if defined _ALS_SetSpawnInfo
+	#undef SetSpawnInfo
 #else
-	#define _ALS_GivePlayerWeapon
+	#define _ALS_SetSpawnInfo
 #endif
-#define GivePlayerWeapon PAT_GivePlayerWeapon
+#define SetSpawnInfo PAT_SetSpawnInfo
 
 // TIMERS
 
