@@ -1,7 +1,10 @@
 /*
 
                 Pateeer Basic Anti Cheat
-        
+            version 0.2
+
+        Thanks to Mr Michael for giving feedback
+
         Including:
         - Anti Health Hack
         - Anti Armor Hack
@@ -16,9 +19,11 @@
 * OnPlayerCheat(playerid, cheatid)               *
 *                                                *
 * Functions:                                     *
-* GetPlayerWeaponEx(playerid)                    *
-* GetPlayerAmmoEx(playerid)                      *
+* GetPlayerWeaponVar(playerid)                   *
+* GetPlayerAmmoVar(playerid)                     *
+* ResetPlayerWeaponVar(playerid)                 *
 * GetCheatName(cheatid)                          *
+* IsWeaponHasAmmo(weaponid)                      *
 *                                                *
 * Hooked Functions:                              *
 * GivePlayerWeapon(playerid)                     *
@@ -48,7 +53,7 @@
 #define ARMOUR_HACKS 3
 #define WEAPON_HACKS 4
 
-new const PAT_WeaponSlots[] = {
+static const PAT_WeaponSlots[] = {
     0, 0, 1, 1, 1, 1, 1, 1, 1, 
     1, 10, 10, 10, 10, 10, 10, 
     8, 8, 8, 0, 0, 0, 2, 2, 2, 
@@ -59,15 +64,14 @@ new const PAT_WeaponSlots[] = {
 
 stock PAT_GetCheatName(cheatid)
 {
-    static
-        str[64];
+    new str[64];
     
     switch(cheatid){
         case HEALTH_HACKS: str = "Health Hack";
         case ARMOUR_HACKS: str = "Armour Hack";
         case MONEY_HACKS: str = "Money Hack";
         case WEAPON_HACKS: str = "Weapon Hack";
-        default: str = "None";
+        default: str = "Unknown";
     }
     return str;
 }
@@ -87,8 +91,7 @@ enum PAT_PLAYERVAR {
 };
 new pat_player[MAX_PLAYERS][PAT_PLAYERVAR];
 
-// HOOKED FUNCTIONS
-
+// FUNCTIONS
 
 stock PAT_SetPlayerHealth(playerid, Float:health)
 {
@@ -169,7 +172,7 @@ stock PAT_GivePlayerWeapon(playerid, weaponid, ammo)
 #endif
 #define GivePlayerWeapon PAT_GivePlayerWeapon
 
-stock PAT_GetPlayerWeaponEx(playerid)
+stock PAT_GetPlayerWeaponVar(playerid)
 {
     new weaponid = GetPlayerWeapon(playerid);
 
@@ -179,9 +182,9 @@ stock PAT_GetPlayerWeaponEx(playerid)
     return 0;
 }
 
-#define GetPlayerWeaponEx PAT_GetPlayerWeaponEx
+#define GetPlayerWeaponVar PAT_GetPlayerWeaponVar
 
-stock PAT_GetPlayerAmmoEx(playerid)
+stock PAT_GetPlayerAmmoVar(playerid)
 {
     new weaponid = GetPlayerWeapon(playerid);
 	new ammo = pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]];
@@ -195,11 +198,11 @@ stock PAT_GetPlayerAmmoEx(playerid)
 	return 0;
 }
 
-#define GetPlayerAmmoEx PAT_GetPlayerAmmoEx
+#define GetPlayerAmmoVar PAT_GetPlayerAmmoVar
 
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
-	switch(weaponid){ case 0..18, 39..54: return 1;} //invalid weapons
+	if(IsWeaponHasAmmo(weaponid)) return 0;
 	if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
 	{
 		pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]]--;
@@ -247,7 +250,10 @@ public OnGameModeInit(){
 #endif
 
 public OnPlayerConnect(playerid){
-	PAT_ResetPlayerVar(playerid);
+	static const empty_player[PAT_PLAYERVAR] = {};
+    pat_player[playerid] = empty_player;
+    pat_player[playerid][PAT_Health] = 100.0;
+    pat_player[playerid][PAT_Armor] = 0.0;
 	#if defined PAT_OnPlayerConnect
 		return PAT_OnPlayerConnect(playerid);
 	#else
@@ -298,7 +304,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	forward PAT_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
 #endif
 
-stock PAT_ResetPlayerWeaponsEx(playerid)
+stock PAT_ResetPlayerWeaponsVar(playerid)
 {
     ResetPlayerWeapons(playerid);
     for(new i = 0; i < MAX_WEAPON_SLOT; i++) {
@@ -307,16 +313,7 @@ stock PAT_ResetPlayerWeaponsEx(playerid)
     }
     return 1;
 }
-#define ResetPlayerWeaponsEx PAT_ResetPlayerWeaponsEx
-
-stock PAT_ResetPlayerVar(playerid)
-{
-    static const empty_player[PAT_PLAYERVAR] = {};
-    pat_player[playerid] = empty_player;
-    pat_player[playerid][PAT_Health] = 100.0;
-    pat_player[playerid][PAT_Armor] = 0.0;
-    return 1;
-}
+#define ResetPlayerWeaponsVar PAT_ResetPlayerWeaponsVar
 
 stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
@@ -335,6 +332,13 @@ stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:ro
 	#define _ALS_SetSpawnInfo
 #endif
 #define SetSpawnInfo PAT_SetSpawnInfo
+
+stock IsWeaponHasAmmo(weaponid)
+{
+    if(weaponid > 0 && weaponid < 18) return 0;
+    else if(weaponid > 39 && weaponid < 54) return 0;
+    else return 1;
+}
 
 // TIMERS
 
