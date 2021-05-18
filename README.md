@@ -2,6 +2,16 @@
 
 A SAMP Basic Anti Cheat - Plug and Easy to Use
 
+## -
+
+Anti Cheat Including
+```bash
+- Money Hack
+- Health Hack
+- Armour Hack
+- Weapon Hack
+```
+
 ## Callback & Function
 
 ```pawn
