@@ -1,8 +1,6 @@
 # Pateeer Basic Anti Cheat
 
-A SAMP Basic Anti Cheat - Plug and Easy to Use
-
-## -
+## A SAMP Basic Anti Cheat - Plug and Easy to Use
 
 Anti Cheat Including
 ```bash
