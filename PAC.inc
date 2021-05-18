@@ -229,10 +229,10 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 #endif
 
 public OnGameModeInit(){
-	print("===================================");
-    print("     PATEEER BASIC ANTI CHEATS     ");
-    print("             2021   :v             ");
-    print("===================================");
+	print("=====================================");
+    print("|     PATEEER BASIC ANTI CHEATS     |");
+    print("|             2021   :v0.2          |");
+    print("=====================================");
 	#if defined PAT_OnGameModeInit
 		PAT_OnGameModeInit();
 	#endif
@@ -335,8 +335,8 @@ stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:ro
 
 stock IsWeaponHasAmmo(weaponid)
 {
-    if(weaponid > 0 && weaponid < 18) return 0;
-    else if(weaponid > 39 && weaponid < 54) return 0;
+    if(weaponid >= 0 && weaponid <= 18) return 0;
+    else if(weaponid => 39 && weaponid <= 54) return 0;
     else return 1;
 }
 
