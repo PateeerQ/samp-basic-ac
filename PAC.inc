@@ -246,6 +246,25 @@ public OnGameModeInit(){
 	forward PAT_OnGameModeInit();
 #endif
 
+public OnPlayerConnect(playerid){
+	PAT_ResetPlayerVar(playerid);
+	#if defined PAT_OnPlayerConnect
+		return PAT_OnPlayerConnect(playerid);
+	#else
+		return 1;
+	#endif
+}
+
+#if defined _ALS_OnPlayerConnect
+	#undef OnPlayerConnect
+#else
+	#define _ALS_OnPlayerConnect
+#endif
+#define OnPlayerConnect PAT_OnPlayerConnect
+#if defined PAT_OnPlayerConnect
+	forward PAT_OnPlayerConnect(playerid);
+#endif
+
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 {
     new Float:armor;
@@ -290,6 +309,34 @@ stock PAT_ResetPlayerWeaponsEx(playerid)
 }
 #define ResetPlayerWeaponsEx PAT_ResetPlayerWeaponsEx
 
+stock PAT_ResetPlayerVar(playerid)
+{
+    static const empty_player[PAT_PLAYERVAR] = {};
+    pat_player[playerid] = empty_player;
+    pat_player[playerid][PAT_Health] = 100.0;
+    pat_player[playerid][PAT_Armor] = 0.0;
+    SetPlayerArmour(playerid, 0);
+    return 1;
+}
+
+stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+{
+    pat_player[playerid][PAT_Weapon][0] = weapon1;
+    pat_player[playerid][PAT_Ammo][0] += weapon1_ammo;
+    pat_player[playerid][PAT_Weapon][1] = weapon2;
+    pat_player[playerid][PAT_Ammo][1] += weapon2_ammo;
+    pat_player[playerid][PAT_Weapon][2] = weapon3;
+    pat_player[playerid][PAT_Ammo][2] += weapon3_ammo;
+    return GivePlayerWeapon(playerid, weaponid, ammo);
+}
+
+#if defined _ALS_GivePlayerWeapon
+	#undef GivePlayerWeapon
+#else
+	#define _ALS_GivePlayerWeapon
+#endif
+#define GivePlayerWeapon PAT_GivePlayerWeapon
+
 // TIMERS
 
 ptask PAT_AntiCheatCheck[1000](playerid)
@@ -307,7 +354,7 @@ ptask PAT_AntiCheatCheck[1000](playerid)
         SetPlayerHealth(playerid, pat_player[playerid][PAT_Health]);
         CallLocalFunction("OnPlayerCheat", "ii", playerid, HEALTH_HACKS);
     }
-    if(health > pat_player[playerid][PAT_Armor])
+    if(armor > pat_player[playerid][PAT_Armor])
     {
         SetPlayerArmour(playerid, pat_player[playerid][PAT_Armor]);
         CallLocalFunction("OnPlayerCheat", "ii", playerid, ARMOUR_HACKS);
