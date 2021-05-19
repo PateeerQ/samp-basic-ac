@@ -20,20 +20,12 @@ public OnPlayerCheat(playerid, cheatid)
 GetCheatName(cheatid)
 GetPlayerWeaponVar(playerid)
 GetPlayerAmmoVar(playerid)
-IsWeaponHasAmmo(weaponid)
 ```
 
-Include in your code and you must use YSI Y_Timers
-```pawn
-#include <YSI\y_timers>
-#include <PAC>
-```
-
-## How To Use
+## Usage
 
 ```pawn
 #include <a_samp>
-#include <YSI\y_timers>
 #include <PAC>
 
 public OnPlayerCheat(playerid, cheatid)
@@ -41,6 +33,6 @@ public OnPlayerCheat(playerid, cheatid)
     new name[MAX_PLAYER_NAME + 1];
     GetPlayerName(playerid, name, sizeof(name));
     printf("%s(%d) has possibly using '%s'", name, playerid, GetCheatName(cheatid));
-    return 1;
+    return 0; // always return 0 for desync the player.
 }
 ````
