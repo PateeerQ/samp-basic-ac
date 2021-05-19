@@ -23,9 +23,8 @@ GetPlayerAmmoVar(playerid)
 IsWeaponHasAmmo(weaponid)
 ```
 
-Include in your code and you must use YSI Y_Timers
+Include in your code like this
 ```pawn
-#include <YSI\y_timers>
 #include <PAC>
 ```
 
@@ -33,7 +32,6 @@ Include in your code and you must use YSI Y_Timers
 
 ```pawn
 #include <a_samp>
-#include <YSI\y_timers>
 #include <PAC>
 
 public OnPlayerCheat(playerid, cheatid)
