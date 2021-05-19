@@ -48,10 +48,12 @@
 #define DEFAULT_MONEY 0
 
 #define INVALID_CHEAT_ID 0
-#define MONEY_HACKS 1
-#define HEALTH_HACKS 2
-#define ARMOUR_HACKS 3
-#define WEAPON_HACKS 4
+enum {
+    MONEY_HACKS,
+    HEALTH_HACKS,
+    ARMOUR_HACKS,
+    WEAPON_HACKS
+};
 
 static const PAT_WeaponSlots[] = {
     0, 0, 1, 1, 1, 1, 1, 1, 1, 
@@ -202,7 +204,7 @@ stock PAT_GetPlayerAmmoVar(playerid)
 
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
-	if(IsWeaponHasAmmo(weaponid)) return 0;
+	if(!IsWeaponHasAmmo(weaponid)) return 0;
 	if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
 	{
 		pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]]--;
@@ -333,11 +335,19 @@ stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:ro
 #endif
 #define SetSpawnInfo PAT_SetSpawnInfo
 
-stock IsWeaponHasAmmo(weaponid)
+IsWeaponHasAmmo(weaponid)
 {
-    if(weaponid >= 0 && weaponid <= 18) return 0;
-    else if(weaponid => 39 && weaponid <= 54) return 0;
-    else return 1;
+	static const PAT_WeaponID[] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0
+	};
+	if(weaponid < 0 || weaponid > 54)
+		return 0;
+
+	return (PAT_WeaponID[weaponid]);
 }
 
 // TIMERS
