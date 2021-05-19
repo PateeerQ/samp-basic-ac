@@ -1,7 +1,7 @@
 /*
 
                 Pateeer Basic Anti Cheat
-            version 0.2
+            version 0.3
 
         Thanks to Mr Michael for giving feedback
 
@@ -229,7 +229,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 public OnGameModeInit(){
 	print("=====================================");
     print("|     PATEEER BASIC ANTI CHEATS     |");
-    print("|             2021   :v0.2          |");
+    print("|             2021   :v             |");
     print("=====================================");
 	#if defined PAT_OnGameModeInit
 		PAT_OnGameModeInit();
