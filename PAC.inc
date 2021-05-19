@@ -38,10 +38,6 @@
 	#error Please include a_samp before TimerCheck.
 #endif
 
-#if !defined _INC_y_timers
-	#error Please include y_timers to use this.
-#endif
-
 // DEFINES/FORWARDS
 
 #define MAX_WEAPON_SLOT 13
@@ -238,6 +234,9 @@ public OnGameModeInit(){
 	#if defined PAT_OnGameModeInit
 		PAT_OnGameModeInit();
 	#endif
+    #if !defined _INC_y_timers
+        forward PAT_PlayerUpdate(playerid);
+    #endif
 	return 1;
 }
 
@@ -256,6 +255,9 @@ public OnPlayerConnect(playerid){
     pat_player[playerid] = empty_player;
     pat_player[playerid][PAT_Health] = 100.0;
     pat_player[playerid][PAT_Armor] = 0.0;
+    #if !defined _INC_y_timers
+        SetTimerEx("PAT_PlayerUpdate", 1000, true, "i", playerid);
+    #endif
 	#if defined PAT_OnPlayerConnect
 		return PAT_OnPlayerConnect(playerid);
 	#else
@@ -352,41 +354,83 @@ IsWeaponHasAmmo(weaponid)
 
 // TIMERS
 
-ptask PAT_AntiCheatCheck[1000](playerid)
-{
-    if(GetPlayerMoney(playerid) > pat_player[playerid][PAT_Money] || GetPlayerMoney(playerid) < pat_player[playerid][PAT_Money])
+#if defined _INC_y_timers
+    ptask PAT_AntiCheatCheck[1000](playerid)
     {
-        SetPlayerMoney(playerid, pat_player[playerid][PAT_Money]);
-        CallLocalFunction("OnPlayerCheat", "ii", playerid, MONEY_HACKS);
-    }
-    new Float:health, Float:armor;
-    GetPlayerHealth(playerid, health);
-    GetPlayerArmour(playerid, armor);
-    if(health > pat_player[playerid][PAT_Health])
-    {
-        SetPlayerHealth(playerid, pat_player[playerid][PAT_Health]);
-        CallLocalFunction("OnPlayerCheat", "ii", playerid, HEALTH_HACKS);
-    }
-    if(armor > pat_player[playerid][PAT_Armor])
-    {
-        SetPlayerArmour(playerid, pat_player[playerid][PAT_Armor]);
-        CallLocalFunction("OnPlayerCheat", "ii", playerid, ARMOUR_HACKS);
-    }
-    if(GetPlayerWeapon(playerid) != pat_player[playerid][PAT_Gun])
-    {
-        pat_player[playerid][PAT_Gun] = GetPlayerWeapon(playerid);
-
-        if(pat_player[playerid][PAT_Gun] >= 1 && pat_player[playerid][PAT_Gun] <= 45 && pat_player[playerid][PAT_Gun] != 40 && pat_player[playerid][PAT_Gun] != 2 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[pat_player[playerid][PAT_Gun]]] != GetPlayerWeapon(playerid) && GetPlayerWeapon(playerid) != 41)
+        if(GetPlayerMoney(playerid) > pat_player[playerid][PAT_Money] || GetPlayerMoney(playerid) < pat_player[playerid][PAT_Money])
         {
-            ResetPlayerWeapons(playerid);
-
-            for (new i = 0; i < MAX_WEAPON_SLOT; i ++) if(pat_player[playerid][PAT_Weapon][i] > 0 && pat_player[playerid][PAT_Ammo][i] > 0) {
-                GivePlayerWeapon(playerid, pat_player[playerid][PAT_Weapon][i], pat_player[playerid][PAT_Ammo][i]);
-            }
-            CallLocalFunction("OnPlayerCheat", "ii", playerid, WEAPON_HACKS);
-            return 1;
+            SetPlayerMoney(playerid, pat_player[playerid][PAT_Money]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, MONEY_HACKS);
         }
-    }
-    return 1;
-}
+        new Float:health, Float:armor;
+        GetPlayerHealth(playerid, health);
+        GetPlayerArmour(playerid, armor);
+        if(health > pat_player[playerid][PAT_Health])
+        {
+            SetPlayerHealth(playerid, pat_player[playerid][PAT_Health]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, HEALTH_HACKS);
+        }
+        if(armor > pat_player[playerid][PAT_Armor])
+        {
+            SetPlayerArmour(playerid, pat_player[playerid][PAT_Armor]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, ARMOUR_HACKS);
+        }
+        if(GetPlayerWeapon(playerid) != pat_player[playerid][PAT_Gun])
+        {
+            pat_player[playerid][PAT_Gun] = GetPlayerWeapon(playerid);
 
+            if(pat_player[playerid][PAT_Gun] >= 1 && pat_player[playerid][PAT_Gun] <= 45 && pat_player[playerid][PAT_Gun] != 40 && pat_player[playerid][PAT_Gun] != 2 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[pat_player[playerid][PAT_Gun]]] != GetPlayerWeapon(playerid) && GetPlayerWeapon(playerid) != 41)
+            {
+                ResetPlayerWeapons(playerid);
+
+                for (new i = 0; i < MAX_WEAPON_SLOT; i ++) if(pat_player[playerid][PAT_Weapon][i] > 0 && pat_player[playerid][PAT_Ammo][i] > 0) {
+                    GivePlayerWeapon(playerid, pat_player[playerid][PAT_Weapon][i], pat_player[playerid][PAT_Ammo][i]);
+                }
+                CallLocalFunction("OnPlayerCheat", "ii", playerid, WEAPON_HACKS);
+                return 1;
+            }
+        }
+        return 1;
+    }
+#endif
+
+#if !defined _INC_y_timers
+    public PAT_PlayerUpdate(playerid)
+    {
+        if(!IsPlayerConnected(playerid)) return 0;
+        if(GetPlayerMoney(playerid) > pat_player[playerid][PAT_Money] || GetPlayerMoney(playerid) < pat_player[playerid][PAT_Money])
+        {
+            SetPlayerMoney(playerid, pat_player[playerid][PAT_Money]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, MONEY_HACKS);
+        }
+        new Float:health, Float:armor;
+        GetPlayerHealth(playerid, health);
+        GetPlayerArmour(playerid, armor);
+        if(health > pat_player[playerid][PAT_Health])
+        {
+            SetPlayerHealth(playerid, pat_player[playerid][PAT_Health]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, HEALTH_HACKS);
+        }
+        if(armor > pat_player[playerid][PAT_Armor])
+        {
+            SetPlayerArmour(playerid, pat_player[playerid][PAT_Armor]);
+            CallLocalFunction("OnPlayerCheat", "ii", playerid, ARMOUR_HACKS);
+        }
+        if(GetPlayerWeapon(playerid) != pat_player[playerid][PAT_Gun])
+        {
+            pat_player[playerid][PAT_Gun] = GetPlayerWeapon(playerid);
+
+            if(pat_player[playerid][PAT_Gun] >= 1 && pat_player[playerid][PAT_Gun] <= 45 && pat_player[playerid][PAT_Gun] != 40 && pat_player[playerid][PAT_Gun] != 2 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[pat_player[playerid][PAT_Gun]]] != GetPlayerWeapon(playerid) && GetPlayerWeapon(playerid) != 41)
+            {
+                ResetPlayerWeapons(playerid);
+
+                for (new i = 0; i < MAX_WEAPON_SLOT; i ++) if(pat_player[playerid][PAT_Weapon][i] > 0 && pat_player[playerid][PAT_Ammo][i] > 0) {
+                    GivePlayerWeapon(playerid, pat_player[playerid][PAT_Weapon][i], pat_player[playerid][PAT_Ammo][i]);
+                }
+                CallLocalFunction("OnPlayerCheat", "ii", playerid, WEAPON_HACKS);
+                return 1;
+            }
+        }
+        return 1;
+    }
+#endif
