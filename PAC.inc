@@ -4,6 +4,7 @@
             version 0.3
 
         Thanks to Mr Michael for giving feedback
+                  ff-agus for Improvements
 
         Including:
         - Anti Health Hack
@@ -34,7 +35,7 @@
 *                                                *
 **************************************************/
 
-// Include guards
+// Guards
 #if defined PAT_Included
     #endinput
 #endif 
@@ -42,35 +43,30 @@
 #define PAT_Included
 
 #if !defined _samp_included
-    #error Please include a_samp before this.
+	#error Please include a_samp before using this.
 #endif
 
-// can be changed before including this
+// DEFINES/FORWARDS
+
 #if !defined MAX_WEAPON_SLOT
     #define MAX_WEAPON_SLOT 13
 #endif
 
-#if !defined DEFAULT_MONEY
-    #define DEFAULT_MONEY 0
-#endif
-
-// cannot be changed!
-#if defined INVALID_CHEAT_ID
-	#undef INVALID_CHEAT_ID
-#endif
-
 #define INVALID_CHEAT_ID -1
 
-enum _:E_CHEAT_TYPE {
+#define GetCheatName PAT_GetCheatName
+#define SetPlayerMoney PAT_SetPlayerMoney
+#define GetPlayerWeaponVar PAT_GetPlayerWeaponVar
+#define GetPlayerAmmoVar PAT_GetPlayerAmmoVar
+#define ResetPlayerWeaponsVar PAT_ResetPlayerWeaponsVar
+#define IsWeaponHasAmmo PAT_IsWeaponHasAmmo
+
+enum _:PAT_CHEATTYPE {
     MONEY_HACKS,
     HEALTH_HACKS,
     ARMOUR_HACKS,
     WEAPON_HACKS
 };
-
-#if defined OnPlayerCheat
-	forward OnPlayerCheat(playerid, cheatid);
-#endif
 
 static const PAT_WeaponSlots[] = {
     0, 0, 1, 1, 1, 1, 1, 1, 1, 
@@ -81,38 +77,11 @@ static const PAT_WeaponSlots[] = {
     9, 11, 11, 11
 };
 
-static IsWeaponHasAmmo(weaponid)
-{
-	static const PAT_WeaponID[] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0
-	};
-
-	if(!(0 < weaponid < 54))
-		return 0;
-
-	return (PAT_WeaponID[weaponid]);
-}
-
-enum E_PAT_PLAYERS {
-    Float:PAT_Health,
-    Float:PAT_Armor,
-    PAT_Money,
-    PAT_Gun,
-    PAT_Weapon[MAX_WEAPON_SLOT],
-    PAT_Ammo[MAX_WEAPON_SLOT]
-};
-new pat_player[MAX_PLAYERS][E_PAT_PLAYERS];
-
-// Anti Cheat API
 stock PAT_GetCheatName(cheatid)
 {
     new str[32];
     
-    switch(cheatid) {
+    switch(cheatid){
         case HEALTH_HACKS: str = "Health Hack";
         case ARMOUR_HACKS: str = "Armour Hack";
         case MONEY_HACKS: str = "Money Hack";
@@ -122,41 +91,37 @@ stock PAT_GetCheatName(cheatid)
     return str;
 }
 
-stock PAT_GetPlayerWeaponVar(playerid)
+static PAT_IsWeaponHasAmmo(weaponid)
 {
-    new weaponid = GetPlayerWeapon(playerid);
+	static const PAT_WeaponID[] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0
+	};
+	if(!(0 < weaponid < 54))
+		return 0;
 
-    if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
-        return weaponid;
-
-    return 0;
+	return (PAT_WeaponID[weaponid]);
 }
 
-stock PAT_GetPlayerAmmoVar(playerid)
-{
-    new weaponid = GetPlayerWeapon(playerid);
-	new ammo = pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]];
-	if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
-	{
-		if(pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] != 0 && pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]] > 0)
-		{
-			return ammo;
-		}
-	}
-	return 0;
-}
+forward OnPlayerCheat(playerid, cheatid);
 
-stock PAT_ResetPlayerWeaponsVar(playerid)
-{
-    ResetPlayerWeapons(playerid);
-    for(new i = 0; i < MAX_WEAPON_SLOT; i++) {
-        pat_player[playerid][PAT_Weapon][i] = 0;
-        pat_player[playerid][PAT_Ammo][i] = 0;
-    }
-    return 1;
-}
+// PLAYER DATA
 
-// Server-side Controller
+enum E_PAT_PLAYERVAR {
+    Float:PAT_Health,
+    Float:PAT_Armor,
+    PAT_Money,
+    PAT_Gun,
+    PAT_Weapon[MAX_WEAPON_SLOT],
+    PAT_Ammo[MAX_WEAPON_SLOT]
+};
+new pat_player[MAX_PLAYERS][E_PAT_PLAYERVAR];
+
+// FUNCTIONS
+
 stock PAT_SetPlayerHealth(playerid, Float:health)
 {
     pat_player[playerid][PAT_Health] = health;
@@ -184,7 +149,7 @@ stock PAT_GivePlayerMoney(playerid, amount)
 
 stock PAT_ResetPlayerMoney(playerid)
 {
-    pat_player[playerid][PAT_Money] = DEFAULT_MONEY;
+    pat_player[playerid][PAT_Money] = 0;
     return ResetPlayerMoney(playerid);
 }
 
@@ -194,47 +159,32 @@ stock PAT_GivePlayerWeapon(playerid, weaponid, ammo)
         return 0;
 
     pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] = weaponid;
-    pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]] += ammo;
+    pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]] = ammo;
     return GivePlayerWeapon(playerid, weaponid, ammo);
 }
 
-stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+stock PAT_GetPlayerWeaponVar(playerid)
 {
-    pat_player[playerid][PAT_Weapon][0] = weapon1;
-    pat_player[playerid][PAT_Ammo][0] += weapon1_ammo;
-    pat_player[playerid][PAT_Weapon][1] = weapon2;
-    pat_player[playerid][PAT_Ammo][1] += weapon2_ammo;
-    pat_player[playerid][PAT_Weapon][2] = weapon3;
-    pat_player[playerid][PAT_Ammo][2] += weapon3_ammo;
-    return SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+    new weaponid = GetPlayerWeapon(playerid);
+
+    if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
+        return weaponid;
+
+    return 0;
 }
 
-
-public OnGameModeInit(){
-	print("=====================================");
-    print("|     PATEEER BASIC ANTI CHEATS     |");
-    print("|               v3.0                |");
-    print("=====================================");
-
-	#if defined PAT_OnGameModeInit
-		PAT_OnGameModeInit();
-	#endif
-	return 1;
-}
-
-public OnPlayerConnect(playerid){
-
-    new pat_empty[E_PAT_PLAYERS];
-    pat_player[playerid] = pat_empty;
-
-    pat_player[playerid][PAT_Health] = 100.0;
-    pat_player[playerid][PAT_Armor] = 0.0;
-
-	#if defined PAT_OnPlayerConnect
-		return PAT_OnPlayerConnect(playerid);
-	#else
-		return 1;
-	#endif
+stock PAT_GetPlayerAmmoVar(playerid)
+{
+    new weaponid = GetPlayerWeapon(playerid);
+	new ammo = pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]];
+	if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
+	{
+		if(pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] != 0 && pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]] > 0)
+		{
+			return ammo;
+		}
+	}
+	return 0;
 }
 
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
@@ -255,21 +205,47 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	#endif
 }
 
+public OnGameModeInit(){
+	print("=====================================");
+    print("|     PATEEER BASIC ANTI CHEATS     |");
+    print("|             2021   :v             |");
+    print("=====================================");
+	#if defined PAT_OnGameModeInit
+		PAT_OnGameModeInit();
+	#endif
+    #if !defined _INC_y_timers
+        forward PAT_PlayerUpdate(playerid);
+    #endif
+	return 1;
+}
+
+public OnPlayerConnect(playerid){
+	new empty_PAT[E_PAT_PLAYERVAR] = {};
+    pat_player[playerid] = empty_PAT;
+    pat_player[playerid][PAT_Health] = 100.0;
+    pat_player[playerid][PAT_Armor] = 0.0;
+	#if defined PAT_OnPlayerConnect
+		return PAT_OnPlayerConnect(playerid);
+	#else
+		return 1;
+	#endif
+}
+
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 {
-    new Float:PAT_armour;
-    GetPlayerArmour(playerid, PAT_armour);
-    if(PAT_armour > 0)
+    new Float:armor;
+    GetPlayerArmour(playerid, armor);
+    if(armor > 0)
     {
         pat_player[playerid][PAT_Armor] -= amount;
-        SetPlayerArmour(playerid, PAT_armour-amount);
+        SetPlayerArmour(playerid, armor-amount);
     }
     else
     {
-        new Float:PAT_health;
-        GetPlayerHealth(playerid, PAT_health);
+        new Float:health;
+        GetPlayerHealth(playerid, health);
         pat_player[playerid][PAT_Health] -= amount;
-        SetPlayerHealth(playerid, PAT_health-amount);
+        SetPlayerHealth(playerid, health-amount);
     }
 	#if defined PAT_OnPlayerTakeDamage
 		return PAT_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
@@ -278,17 +254,29 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	#endif
 }
 
-/* 
-    This? better check it under OnPlayerUpdate.
-    Why? you need a better check every 30x per 1 second.
+stock PAT_ResetPlayerWeaponsVar(playerid)
+{
+    ResetPlayerWeapons(playerid);
+    for(new i = 0; i < MAX_WEAPON_SLOT; i++) {
+        pat_player[playerid][PAT_Weapon][i] = 0;
+        pat_player[playerid][PAT_Ammo][i] = 0;
+    }
+    return 1;
+}
 
-    But people say OnPlayerUpdate is not good? yes i know but
-    still you need OnPlayerUpdate to constantly checking the player data.
+stock PAT_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+{
+    pat_player[playerid][PAT_Weapon][0] = weapon1;
+    pat_player[playerid][PAT_Ammo][0] = weapon1_ammo;
+    pat_player[playerid][PAT_Weapon][1] = weapon2;
+    pat_player[playerid][PAT_Ammo][1] = weapon2_ammo;
+    pat_player[playerid][PAT_Weapon][2] = weapon3;
+    pat_player[playerid][PAT_Ammo][2] = weapon3_ammo;
+    return SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+}
 
-    You do not need timer 1 second because cheater can actually bypass it by making some script to set
-    health 500ms before the next timer starts and the player can reconnect to the server then the thing
-    he hacked will be in your db.
-*/
+// Player Update
+
 public OnPlayerUpdate(playerid)
 {
     if(GetPlayerMoney(playerid) > pat_player[playerid][PAT_Money] || GetPlayerMoney(playerid) < pat_player[playerid][PAT_Money])
@@ -333,13 +321,6 @@ public OnPlayerUpdate(playerid)
     	return 1;
     #endif
 }
-
-// Rename functions, i do not think this was necessary
-#define GetCheatName PAT_GetCheatName
-#define SetPlayerMoney PAT_SetPlayerMoney
-#define GetPlayerWeaponVar PAT_GetPlayerWeaponVar
-#define GetPlayerAmmoVar PAT_GetPlayerAmmoVar
-#define ResetPlayerWeaponsVar PAT_ResetPlayerWeaponsVar
 
 // ALS hook functions
 #if defined _ALS_SetPlayerHealth
