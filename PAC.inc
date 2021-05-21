@@ -175,7 +175,7 @@ stock PAT_GetPlayerWeaponVar(playerid)
 
 stock PAT_GetPlayerAmmoVar(playerid)
 {
-    new weaponid = GetPlayerWeapon(playerid);
+    	new weaponid = GetPlayerWeapon(playerid);
 	new ammo = pat_player[playerid][PAT_Ammo][PAT_WeaponSlots[weaponid]];
 	if(1 <= weaponid <= 46 && pat_player[playerid][PAT_Weapon][PAT_WeaponSlots[weaponid]] == weaponid)
 	{
