@@ -1,4 +1,4 @@
-# SAMP Basic Anti Cheat
+# SAMP Basic Anti Cheat (unused)
 
 ## A SAMP Basic Anti Cheat - Plug and Easy to Use
 
